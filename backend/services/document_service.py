@@ -3,6 +3,7 @@ import json
 import os
 
 from openai import AsyncOpenAI
+from services import log_service
 
 _client: AsyncOpenAI | None = None
 
@@ -59,6 +60,10 @@ async def analyze_documents(
     for filename, content in files:
         text = extract_text(filename, content)
         if not text.strip():
+            await log_service.warning(
+                "document_service", "extract_text",
+                f"Sem texto extraído de '{filename}' ({len(content)} bytes)",
+            )
             results.append(_fallback(filename, "Não foi possível extrair texto do documento"))
             continue
 
@@ -110,6 +115,7 @@ Responda APENAS com JSON válido, sem markdown:
         content = response.choices[0].message.content or ""
         return _parse(filename, content)
     except Exception as exc:
+        await log_service.error("document_service", f"analyze:{filename}", exc)
         return _fallback(filename, f"Erro na análise: {exc}")
 
 

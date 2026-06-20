@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import httpx
+from services import log_service
 
 _TRANSPARENCIA_URL = "https://api.portaldatransparencia.gov.br/api-de-dados"
 _lista_suja_cnpjs: set[str] = set()
@@ -72,6 +73,8 @@ async def _check_transparencia(endpoint: str, cnpj: str, label: str) -> dict:
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code == 404:
             return {"triggered": False, "detail": f"Sem sanções no {label}", "multiplier": 1.0}
+        await log_service.warning("transparency_service", f"check:{endpoint}", f"HTTP {exc.response.status_code} — {label}", cnpj)
         return {"triggered": False, "detail": f"{label} indisponível", "multiplier": 1.0}
-    except Exception:
+    except Exception as exc:
+        await log_service.error("transparency_service", f"check:{endpoint}", exc, cnpj)
         return {"triggered": False, "detail": f"{label} indisponível", "multiplier": 1.0}

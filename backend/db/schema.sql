@@ -64,5 +64,17 @@ CREATE TABLE IF NOT EXISTS paises      (codigo TEXT PRIMARY KEY, descricao TEXT)
 CREATE TABLE IF NOT EXISTS qualificacoes (codigo TEXT PRIMARY KEY, descricao TEXT);
 CREATE TABLE IF NOT EXISTS motivos     (codigo TEXT PRIMARY KEY, descricao TEXT);
 
+CREATE TABLE IF NOT EXISTS logs (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts          TEXT    NOT NULL,          -- ISO-8601 UTC
+    level       TEXT    NOT NULL,          -- error | warning | info
+    service     TEXT    NOT NULL,          -- ai_service | cnpj_service | etc.
+    operation   TEXT    NOT NULL,          -- nome da função/operação
+    cnpj        TEXT,                      -- CNPJ sendo analisado (pode ser NULL)
+    message     TEXT    NOT NULL,
+    traceback   TEXT                       -- traceback completo (só em errors)
+);
+
 CREATE INDEX IF NOT EXISTS idx_estab_cnpj  ON estabelecimentos (cnpj_basico);
 CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios (cnpj_basico);
+CREATE INDEX IF NOT EXISTS idx_logs_ts     ON logs (ts DESC);

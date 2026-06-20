@@ -3,6 +3,7 @@ import os
 from datetime import datetime, date
 
 from openai import AsyncOpenAI
+from services import log_service
 
 _client: AsyncOpenAI | None = None
 
@@ -31,6 +32,8 @@ async def analyze(data: dict, context: str, score_formula: float, docs: list) ->
         content = response.choices[0].message.content or ""
         return _parse_response(content)
     except Exception as exc:
+        cnpj = data.get("cnpj_basico", "")
+        await log_service.error("ai_service", "analyze", exc, cnpj)
         return {
             "score_ia": score_formula,
             "parecer_ia": f"Análise de IA indisponível: {exc}",
