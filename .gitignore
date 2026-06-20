@@ -1,0 +1,41 @@
+# dependências
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# banco de dados
+*.db
+*.sqlite
+
+# variáveis de ambiente e chaves de API
+.env
+backend/.env
+frontend/.env
+tokensAPI.md
+
+# build do frontend
+frontend/dist/
+frontend/.vite/
+
+# logs e temporários
+*.log
+*.tmp
+dist/
+
+# arquivos grandes / CSVs da Receita Federal
+*.csv
+data/
+backend/data/
+
+# PDFs e PPTs (insumos do hackathon)
+*.pdf
+*.pptx
+
+# sistema
+.DS_Store
+Thumbs.db
+design_md/
