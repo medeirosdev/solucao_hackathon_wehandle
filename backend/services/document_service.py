@@ -67,7 +67,7 @@ async def analyze_documents(
             results.append(_fallback(filename, "Não foi possível extrair texto do documento"))
             continue
 
-        analysis = await _analyze_single(filename, text[:4000], cnpj, razao_social, context)
+        analysis = await _analyze_single(filename, text[:3000], cnpj, razao_social, context)
         results.append(analysis)
 
     return results
@@ -110,7 +110,7 @@ Responda APENAS com JSON válido, sem markdown:
             model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
-            max_tokens=700,
+            max_tokens=1500,
         )
         content = response.choices[0].message.content or ""
         return _parse(filename, content)
@@ -121,31 +121,68 @@ Responda APENAS com JSON válido, sem markdown:
 
 def _parse(filename: str, content: str) -> dict:
     cleaned = content.strip()
-    if cleaned.startswith("```"):
-        lines = [l for l in cleaned.split("\n") if not l.startswith("```")]
-        cleaned = "\n".join(lines)
 
+    # remove blocos markdown ```json ... ```
+    if "```" in cleaned:
+        lines = [l for l in cleaned.split("\n") if not l.startswith("```")]
+        cleaned = "\n".join(lines).strip()
+
+    # tenta parse direto
+    parsed = _try_json(cleaned)
+
+    # se falhou por truncamento, tenta fechar o JSON antes de parsear
+    if parsed is None:
+        parsed = _try_json(_repair_truncated(cleaned))
+
+    if parsed is None:
+        return _fallback(filename, content[:300])
+
+    return {
+        "fileName": filename,
+        "tipo": str(parsed.get("tipo", "Documento")),
+        "resumo": str(parsed.get("resumo", "")),
+        "insights": [str(i) for i in parsed.get("insights", []) if i],
+        "redFlags": [
+            {
+                "severity": r.get("severity", "info"),
+                "message": str(r.get("message", "")),
+                "source": str(r.get("source", f"Documento — {filename}")),
+            }
+            for r in parsed.get("red_flags", [])
+            if isinstance(r, dict)
+        ],
+        "confiabilidade": _clamp(parsed.get("confiabilidade", 50)),
+        "compatibilidade": _clamp(parsed.get("compatibilidade", 50)),
+        "scoreDocumento": _clamp(parsed.get("score_documento", 50)),
+    }
+
+
+def _try_json(text: str) -> dict | None:
     try:
-        parsed = json.loads(cleaned)
-        return {
-            "fileName": filename,
-            "tipo": str(parsed.get("tipo", "Documento")),
-            "resumo": str(parsed.get("resumo", "")),
-            "insights": [str(i) for i in parsed.get("insights", [])],
-            "redFlags": [
-                {
-                    "severity": r.get("severity", "info"),
-                    "message": str(r.get("message", "")),
-                    "source": str(r.get("source", f"Documento — {filename}")),
-                }
-                for r in parsed.get("red_flags", [])
-            ],
-            "confiabilidade": int(parsed.get("confiabilidade", 50)),
-            "compatibilidade": int(parsed.get("compatibilidade", 50)),
-            "scoreDocumento": int(parsed.get("score_documento", 50)),
-        }
-    except (json.JSONDecodeError, KeyError, ValueError):
-        return _fallback(filename, content[:200])
+        result = json.loads(text)
+        return result if isinstance(result, dict) else None
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
+def _repair_truncated(text: str) -> str:
+    """Tenta fechar um JSON truncado pelo limite de tokens."""
+    # fecha strings abertas
+    if text.count('"') % 2 != 0:
+        text += '"'
+    # fecha listas e objetos abertos
+    opens = text.count('[') - text.count(']')
+    objs  = text.count('{') - text.count('}')
+    text += ']' * max(0, opens)
+    text += '}' * max(0, objs)
+    return text
+
+
+def _clamp(value) -> int:
+    try:
+        return max(0, min(100, int(value)))
+    except (TypeError, ValueError):
+        return 0
 
 
 def _fallback(filename: str, detail: str) -> dict:
