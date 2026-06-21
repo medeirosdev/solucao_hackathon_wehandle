@@ -1,9 +1,10 @@
+import asyncio
 import io
 import json
 import os
 
-from openai import AsyncOpenAI
-from services import log_service
+from openai import AsyncOpenAI, RateLimitError, APIStatusError
+from services import log_service, usage_service
 
 _client: AsyncOpenAI | None = None
 
@@ -14,7 +15,7 @@ def _get_client() -> AsyncOpenAI:
         _client = AsyncOpenAI(
             api_key=os.getenv("DEEPSEEK_API_KEY", ""),
             base_url="https://api.deepseek.com",
-            timeout=30.0,
+            timeout=45.0,
         )
     return _client
 
@@ -56,21 +57,18 @@ async def analyze_documents(
     razao_social: str,
     context: str,
 ) -> list[dict]:
-    results = []
-    for filename, content in files:
+    async def _process(filename: str, content: bytes) -> dict:
         text = extract_text(filename, content)
         if not text.strip():
             await log_service.warning(
                 "document_service", "extract_text",
                 f"Sem texto extraído de '{filename}' ({len(content)} bytes)",
             )
-            results.append(_fallback(filename, "Não foi possível extrair texto do documento"))
-            continue
+            return _fallback(filename, "Não foi possível extrair texto do documento")
+        return await _analyze_single(filename, text[:3000], cnpj, razao_social, context)
 
-        analysis = await _analyze_single(filename, text[:3000], cnpj, razao_social, context)
-        results.append(analysis)
-
-    return results
+    # processa todos os documentos em paralelo
+    return list(await asyncio.gather(*[_process(fn, c) for fn, c in files]))
 
 
 async def _analyze_single(
@@ -113,10 +111,23 @@ Responda APENAS com JSON válido, sem markdown:
             max_tokens=1500,
         )
         content = response.choices[0].message.content or ""
+        if response.usage:
+            await usage_service.record(
+                "document_service", f"analyze:{filename}", "deepseek-chat",
+                response.usage.prompt_tokens,
+                response.usage.completion_tokens,
+                cnpj,
+            )
         return _parse(filename, content)
+    except RateLimitError:
+        await log_service.warning("document_service", f"analyze:{filename}", "Rate limit DeepSeek")
+        return _fallback(filename, "⚠️ Limite de uso da API DeepSeek atingido. Análise documental indisponível.")
+    except APIStatusError as exc:
+        await log_service.error("document_service", f"analyze:{filename}", exc)
+        return _fallback(filename, f"⚠️ Erro na API DeepSeek (HTTP {exc.status_code}).")
     except Exception as exc:
         await log_service.error("document_service", f"analyze:{filename}", exc)
-        return _fallback(filename, f"Erro na análise: {exc}")
+        return _fallback(filename, f"⚠️ Análise indisponível: {type(exc).__name__}.")
 
 
 def _parse(filename: str, content: str) -> dict:

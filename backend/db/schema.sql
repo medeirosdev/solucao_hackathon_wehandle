@@ -75,6 +75,20 @@ CREATE TABLE IF NOT EXISTS logs (
     traceback   TEXT                       -- traceback completo (só em errors)
 );
 
+CREATE TABLE IF NOT EXISTS usage (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts                TEXT    NOT NULL,   -- ISO-8601 UTC
+    service           TEXT    NOT NULL,   -- ai_service | document_service
+    operation         TEXT    NOT NULL,
+    cnpj              TEXT,
+    model             TEXT    NOT NULL,
+    prompt_tokens     INTEGER NOT NULL,
+    completion_tokens INTEGER NOT NULL,
+    total_tokens      INTEGER NOT NULL,
+    cost_usd          REAL    NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_estab_cnpj  ON estabelecimentos (cnpj_basico);
 CREATE INDEX IF NOT EXISTS idx_socios_cnpj ON socios (cnpj_basico);
-CREATE INDEX IF NOT EXISTS idx_logs_ts     ON logs (ts DESC);
+CREATE INDEX IF NOT EXISTS idx_logs_ts     ON logs  (ts DESC);
+CREATE INDEX IF NOT EXISTS idx_usage_ts    ON usage (ts DESC);

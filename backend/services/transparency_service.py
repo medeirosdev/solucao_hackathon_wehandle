@@ -6,26 +6,28 @@ import httpx
 from services import log_service
 
 _TRANSPARENCIA_URL = "https://api.portaldatransparencia.gov.br/api-de-dados"
-_lista_suja_cnpjs: set[str] = set()
+_lista_suja_cnpjs: set[str] = set()  # Cadastro de Empregadores (trabalho escravo)
+_ceac_cnpjs:       set[str] = set()  # CEAC — Ajustamento de Conduta
 
 
 def load_lista_suja() -> None:
-    """Carrega o CSV da Lista Suja do MTE em memória no startup."""
-    csv_path = Path(os.getenv("LISTA_SUJA_CSV", "./data/lista_suja_mte.csv"))
-    if not csv_path.exists():
-        return
+    """Carrega os cadastros MTE em memória no startup."""
+    _load_csv_cnpjs(Path(os.getenv("LISTA_SUJA_CSV", "")), _lista_suja_cnpjs)
+    _load_csv_cnpjs(Path(os.getenv("CEAC_CSV", "")),       _ceac_cnpjs)
 
+
+def _load_csv_cnpjs(csv_path: Path, target: set[str]) -> None:
+    if not csv_path or not csv_path.exists():
+        return
     with open(csv_path, encoding="latin-1") as f:
         reader = csv.reader(f, delimiter=";")
+        next(reader, None)  # pula cabeçalho
         for row in reader:
-            if not row:
+            if len(row) < 5:
                 continue
-            # CNPJ pode estar na 1ª ou 2ª coluna dependendo da versão do CSV
-            for cell in row[:3]:
-                digits = "".join(c for c in cell if c.isdigit())
-                if len(digits) == 14:
-                    _lista_suja_cnpjs.add(digits)
-                    break
+            digits = "".join(c for c in row[4] if c.isdigit())
+            if len(digits) == 14:  # ignora CPF (11 dígitos)
+                target.add(digits)
 
 
 async def check_ceis(cnpj: str) -> dict:
@@ -37,11 +39,22 @@ async def check_cnep(cnpj: str) -> dict:
 
 
 async def check_lista_suja(cnpj: str) -> dict:
-    triggered = cnpj in _lista_suja_cnpjs
+    if cnpj in _lista_suja_cnpjs:
+        return {
+            "triggered": True,
+            "detail": "Empresa no Cadastro de Empregadores MTE (trabalho escravo)",
+            "multiplier": 0.0,
+        }
+    if cnpj in _ceac_cnpjs:
+        return {
+            "triggered": True,
+            "detail": "Empresa no CEAC — Ajustamento de Conduta (MTE)",
+            "multiplier": 0.0,
+        }
     return {
-        "triggered": triggered,
-        "detail": "Empresa na Lista Suja do MTE" if triggered else "Sem autuações MTE",
-        "multiplier": 0.0 if triggered else 1.0,
+        "triggered": False,
+        "detail": "Sem autuações nas listas do MTE",
+        "multiplier": 1.0,
     }
 
 

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Upload, X, FileText, ArrowRight, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Settings, Upload, X, FileText, ArrowRight, ToggleLeft, ToggleRight, ScrollText, DollarSign } from 'lucide-react'
 import type { DimensionWeight, AnalysisRequest } from '../types'
 
 const DEFAULT_WEIGHTS: DimensionWeight[] = [
@@ -60,23 +60,45 @@ export default function Home() {
     <div style={{ minHeight: '100vh', background: '#09090b', color: '#a1a1aa', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── top bar ── */}
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #18181b' }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #1f2024' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#a855f7' }} />
-          <span style={{ color: '#52525b', fontSize: 13, letterSpacing: '0.08em', fontWeight: 500 }}>
-            wehandle <span style={{ color: '#27272a', margin: '0 6px' }}>/</span> conformidade
+          <span style={{ color: '#71717a', fontSize: 13, letterSpacing: '0.08em', fontWeight: 500 }}>
+            wehandle <span style={{ color: '#404040', margin: '0 6px' }}>/</span> conformidade
           </span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
+          onClick={() => navigate('/costs')}
+          title="Monitoramento de custos"
+          style={{ background: 'none', border: '1px solid #404040', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#71717a', transition: 'all 0.15s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#6b7280'; (e.currentTarget as HTMLElement).style.color = '#a1a1aa' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#404040'; (e.currentTarget as HTMLElement).style.color = '#71717a' }}
+        >
+          <DollarSign style={{ width: 15, height: 15 }} />
+          <span style={{ fontSize: 13 }}>Custos</span>
+        </button>
+        <button
+          onClick={() => navigate('/logs')}
+          title="Ver logs do sistema"
+          style={{ background: 'none', border: '1px solid #404040', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#71717a', transition: 'all 0.15s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#6b7280'; (e.currentTarget as HTMLElement).style.color = '#a1a1aa' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#404040'; (e.currentTarget as HTMLElement).style.color = '#71717a' }}
+        >
+          <ScrollText style={{ width: 15, height: 15 }} />
+          <span style={{ fontSize: 13 }}>Logs</span>
+        </button>
         <button
           onClick={() => setConfig(true)}
           title="Configurar pesos"
-          style={{ background: 'none', border: '1px solid #27272a', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#52525b', transition: 'all 0.15s' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#3f3f46'; (e.currentTarget as HTMLElement).style.color = '#a1a1aa' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#27272a'; (e.currentTarget as HTMLElement).style.color = '#52525b' }}
+          style={{ background: 'none', border: '1px solid #404040', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: '#71717a', transition: 'all 0.15s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#6b7280'; (e.currentTarget as HTMLElement).style.color = '#a1a1aa' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#404040'; (e.currentTarget as HTMLElement).style.color = '#71717a' }}
         >
           <Settings style={{ width: 15, height: 15 }} />
           <span style={{ fontSize: 13 }}>Pesos</span>
         </button>
+        </div>
       </header>
 
       {/* ── main ── */}
@@ -86,15 +108,15 @@ export default function Home() {
           {/* headline */}
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <h1 style={{ fontSize: 28, fontWeight: 600, color: '#fafafa', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-              Score de Conformidade
+              WeScore
             </h1>
-            <p style={{ fontSize: 15, color: '#52525b', margin: 0 }}>
+            <p style={{ fontSize: 15, color: '#71717a', margin: 0 }}>
               Analise a confiabilidade de um fornecedor com dados públicos e IA
             </p>
           </div>
 
           {/* card */}
-          <div style={{ background: '#111113', border: '1px solid #1c1c1f', borderRadius: 16, overflow: 'hidden' }}>
+          <div style={{ background: '#111113', border: '1px solid #262629', borderRadius: 16, overflow: 'hidden' }}>
 
             {/* CNPJ */}
             <div style={{ padding: '20px 20px 0' }}>
@@ -119,11 +141,11 @@ export default function Home() {
                   boxSizing: 'border-box',
                 }}
               />
-              <div style={{ height: 1, background: cnpjValid ? '#7c3aed' : '#1c1c1f', transition: 'background 0.3s', marginBottom: 16 }} />
+              <div style={{ height: 1, background: cnpjValid ? '#7c3aed' : '#262629', transition: 'background 0.3s', marginBottom: 16 }} />
             </div>
 
             {/* Divider */}
-            <div style={{ height: 1, background: '#18181b' }} />
+            <div style={{ height: 1, background: '#1f2024' }} />
 
             {/* Context */}
             <div style={{ padding: '16px 20px 0' }}>
@@ -150,7 +172,7 @@ export default function Home() {
             </div>
 
             {/* Divider */}
-            <div style={{ height: 1, background: '#18181b' }} />
+            <div style={{ height: 1, background: '#1f2024' }} />
 
             {/* Upload */}
             <div
@@ -168,8 +190,8 @@ export default function Home() {
                 transition: 'background 0.2s',
               }}
             >
-              <Upload style={{ width: 15, height: 15, color: '#3f3f46', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, color: '#3f3f46' }}>
+              <Upload style={{ width: 15, height: 15, color: '#6b7280', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: '#6b7280' }}>
                 {files.length === 0
                   ? 'Anexar documentos (balanço, contratos, certidões)'
                   : `${files.length} documento${files.length > 1 ? 's' : ''} anexado${files.length > 1 ? 's' : ''}`}
@@ -177,7 +199,7 @@ export default function Home() {
               {files.length > 0 && (
                 <button
                   onClick={e => { e.stopPropagation(); setFiles([]) }}
-                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', display: 'flex', lineHeight: 1 }}
+                  style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', lineHeight: 1 }}
                 >
                   <X style={{ width: 14, height: 14 }} />
                 </button>
@@ -189,10 +211,10 @@ export default function Home() {
             {files.length > 0 && (
               <div style={{ padding: '0 20px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {files.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#0d0d0f', border: '1px solid #1c1c1f', borderRadius: 8 }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: '#0d0d0f', border: '1px solid #262629', borderRadius: 8 }}>
                     <FileText style={{ width: 13, height: 13, color: '#7c3aed', flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, color: '#52525b', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
-                    <button onClick={() => setFiles(p => p.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', lineHeight: 1 }}>
+                    <span style={{ fontSize: 12, color: '#71717a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                    <button onClick={() => setFiles(p => p.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}>
                       <X style={{ width: 12, height: 12 }} />
                     </button>
                   </div>
@@ -201,11 +223,11 @@ export default function Home() {
             )}
 
             {/* Divider */}
-            <div style={{ height: 1, background: '#18181b' }} />
+            <div style={{ height: 1, background: '#1f2024' }} />
 
             {/* Footer action */}
             <div style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, color: '#3f3f46' }}>
+              <span style={{ fontSize: 12, color: '#6b7280' }}>
                 {cnpjValid ? <span style={{ color: '#7c3aed' }}>✓ CNPJ válido</span> : 'Digite o CNPJ para continuar'}
               </span>
               <button
@@ -213,8 +235,8 @@ export default function Home() {
                 disabled={!cnpjValid}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  background: cnpjValid ? '#7c3aed' : '#18181b',
-                  color: cnpjValid ? '#fff' : '#3f3f46',
+                  background: cnpjValid ? '#7c3aed' : '#1f2024',
+                  color: cnpjValid ? '#fff' : '#6b7280',
                   border: 'none', borderRadius: 8,
                   padding: '9px 18px',
                   fontSize: 14, fontWeight: 500,
@@ -231,7 +253,7 @@ export default function Home() {
           </div>
 
           {/* hints */}
-          <p style={{ textAlign: 'center', fontSize: 12, color: '#27272a', marginTop: 20 }}>
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#6b7280', marginTop: 20 }}>
             Dados da Receita Federal · Portal da Transparência · IBGE · Consumidor.gov.br
           </p>
         </div>
@@ -250,7 +272,7 @@ export default function Home() {
             position: 'fixed', top: 0, right: 0, bottom: 0,
             width: 380,
             background: '#111113',
-            borderLeft: '1px solid #1c1c1f',
+            borderLeft: '1px solid #262629',
             zIndex: 50,
             display: 'flex', flexDirection: 'column',
             animation: 'slideIn 0.2s ease',
@@ -258,19 +280,19 @@ export default function Home() {
             <style>{`@keyframes slideIn { from { transform: translateX(100%) } to { transform: translateX(0) } }`}</style>
 
             {/* drawer header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #18181b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: '1px solid #1f2024' }}>
               <div>
                 <p style={{ color: '#fafafa', fontSize: 15, fontWeight: 600, margin: 0 }}>Calibragem dos Pesos</p>
-                <p style={{ color: '#3f3f46', fontSize: 12, margin: '2px 0 0' }}>Defina o quanto cada critério impacta o score</p>
+                <p style={{ color: '#6b7280', fontSize: 12, margin: '2px 0 0' }}>Defina o quanto cada critério impacta o score</p>
               </div>
-              <button onClick={() => setConfig(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3f3f46', lineHeight: 1 }}>
+              <button onClick={() => setConfig(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', lineHeight: 1 }}>
                 <X style={{ width: 18, height: 18 }} />
               </button>
             </div>
 
             {/* total indicator */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid #18181b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, color: '#52525b' }}>Total dos pesos ativos</span>
+            <div style={{ padding: '14px 20px', borderBottom: '1px solid #1f2024', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: '#71717a' }}>Total dos pesos ativos</span>
               <span style={{
                 fontFamily: 'monospace', fontSize: 13,
                 color: totalWeight === 100 ? '#22c55e' : '#f59e0b',
@@ -287,7 +309,7 @@ export default function Home() {
               {weights.map(w => (
                 <div key={w.id} style={{
                   background: '#0d0d0f',
-                  border: `1px solid ${w.enabled ? '#1c1c1f' : '#18181b'}`,
+                  border: `1px solid ${w.enabled ? '#262629' : '#1f2024'}`,
                   borderRadius: 12,
                   padding: '14px 16px',
                   opacity: w.enabled ? 1 : 0.4,
@@ -298,7 +320,7 @@ export default function Home() {
                     <button onClick={() => toggleW(w.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', lineHeight: 1 }}>
                       {w.enabled
                         ? <ToggleRight style={{ width: 22, height: 22, color: '#7c3aed' }} />
-                        : <ToggleLeft  style={{ width: 22, height: 22, color: '#27272a' }} />
+                        : <ToggleLeft  style={{ width: 22, height: 22, color: '#404040' }} />
                       }
                     </button>
                   </div>
@@ -319,7 +341,7 @@ export default function Home() {
             </div>
 
             {/* drawer footer */}
-            <div style={{ padding: '16px 20px', borderTop: '1px solid #18181b' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid #1f2024' }}>
               {totalWeight !== 100 && (
                 <p style={{ fontSize: 12, color: '#92400e', marginBottom: 12, textAlign: 'center' }}>
                   Os pesos precisam somar 100% para o score ser preciso
@@ -327,7 +349,7 @@ export default function Home() {
               )}
               <button
                 onClick={() => setConfig(false)}
-                style={{ width: '100%', background: '#18181b', border: '1px solid #27272a', borderRadius: 10, padding: '11px', fontSize: 14, color: '#a1a1aa', cursor: 'pointer', fontWeight: 500 }}
+                style={{ width: '100%', background: '#1f2024', border: '1px solid #404040', borderRadius: 10, padding: '11px', fontSize: 14, color: '#a1a1aa', cursor: 'pointer', fontWeight: 500 }}
               >
                 Salvar e fechar
               </button>
@@ -342,7 +364,7 @@ export default function Home() {
 const labelSt: React.CSSProperties = {
   display: 'block',
   fontSize: 11,
-  color: '#3f3f46',
+  color: '#6b7280',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   fontWeight: 600,

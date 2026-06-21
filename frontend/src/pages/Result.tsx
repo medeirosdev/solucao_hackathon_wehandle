@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { AlertTriangle, CheckCircle, XCircle, Info, ArrowLeft, Download, Building2, FileText, ShieldCheck, Lightbulb } from 'lucide-react'
+import { AlertTriangle, CheckCircle, XCircle, Info, ArrowLeft, Download, Building2, FileText, ShieldCheck, Lightbulb, ScrollText, ThumbsUp, ThumbsDown } from 'lucide-react'
 import type { AnalysisResult, DocumentAnalysis } from '../types'
 
 /* ── helpers ── */
@@ -28,7 +29,7 @@ function ScoreGauge({ score, label, color }: { score: number; label: string; col
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       <div style={{ position: 'relative', width: 130, height: 130 }}>
         <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="65" cy="65" r={r} fill="none" stroke="#1e2030" strokeWidth="10" />
+          <circle cx="65" cy="65" r={r} fill="none" stroke="#252d44" strokeWidth="10" />
           <circle cx="65" cy="65" r={r} fill="none" stroke={color} strokeWidth="10"
             strokeDasharray={circ} strokeDashoffset={off} strokeLinecap="round"
             style={{ transition: 'stroke-dashoffset 1s ease' }}
@@ -36,10 +37,10 @@ function ScoreGauge({ score, label, color }: { score: number; label: string; col
         </svg>
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ fontSize: 28, fontWeight: 700, color: '#f1f5f9' }}>{Math.round(score)}</span>
-          <span style={{ fontSize: 11, color: '#4b5270' }}>/100</span>
+          <span style={{ fontSize: 11, color: '#7d849e' }}>/100</span>
         </div>
       </div>
-      <span style={{ fontSize: 13, color: '#64748b', textAlign: 'center' }}>{label}</span>
+      <span style={{ fontSize: 13, color: '#8492a8', textAlign: 'center' }}>{label}</span>
     </div>
   )
 }
@@ -50,6 +51,8 @@ export default function Result() {
   const result   = location.state?.result as AnalysisResult
 
   if (!result) { navigate('/'); return null }
+
+  const [feedback, setFeedback] = useState<'positive' | 'negative' | null>(null)
 
   const hasVeto    = result.hardGates.some(g => g.triggered && g.multiplier === 0)
   const hasWarning = result.hardGates.some(g => g.triggered && g.multiplier > 0 && g.multiplier < 1)
@@ -75,17 +78,22 @@ export default function Result() {
       )}
 
       {/* Topbar */}
-      <div style={{ borderBottom: '1px solid #1e2030', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ borderBottom: '1px solid #252d44', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#4b5270', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
+          <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#7d849e', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
             <ArrowLeft style={{ width: 16, height: 16 }} /> Nova Análise
           </button>
-          <span style={{ color: '#1e2030' }}>|</span>
-          <span style={{ color: '#4b5270', fontSize: 13 }}>Resultado da Auditoria</span>
+          <span style={{ color: '#454e6a' }}>|</span>
+          <span style={{ color: '#7d849e', fontSize: 13 }}>Resultado da Auditoria</span>
         </div>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#12131c', border: '1px solid #1e2030', borderRadius: 8, padding: '8px 16px', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
-          <Download style={{ width: 16, height: 16 }} /> Exportar PDF
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={() => navigate('/logs')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#12131c', border: '1px solid #252d44', borderRadius: 8, padding: '8px 16px', color: '#7d849e', fontSize: 13, cursor: 'pointer' }}>
+            <ScrollText style={{ width: 15, height: 15 }} /> Logs
+          </button>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#12131c', border: '1px solid #252d44', borderRadius: 8, padding: '8px 16px', color: '#94a3b8', fontSize: 13, cursor: 'pointer' }}>
+            <Download style={{ width: 16, height: 16 }} /> Exportar PDF
+          </button>
+        </div>
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -93,22 +101,22 @@ export default function Result() {
         {/* Company header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: '#12131c', border: '1px solid #1e2030', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Building2 style={{ width: 24, height: 24, color: '#4b5270' }} />
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: '#12131c', border: '1px solid #252d44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Building2 style={{ width: 24, height: 24, color: '#7d849e' }} />
             </div>
             <div>
               <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f1f5f9', margin: 0 }}>{result.razaoSocial}</h1>
-              {result.nomeFantasia && <p style={{ color: '#4b5270', fontSize: 13, marginTop: 2 }}>"{result.nomeFantasia}"</p>}
+              {result.nomeFantasia && <p style={{ color: '#7d849e', fontSize: 13, marginTop: 2 }}>"{result.nomeFantasia}"</p>}
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 10 }}>
-                <span style={{ fontFamily: 'monospace', color: '#4b5270', fontSize: 13 }}>
+                <span style={{ fontFamily: 'monospace', color: '#7d849e', fontSize: 13 }}>
                   {result.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
                 </span>
                 <Dot />
-                <span style={{ color: '#4b5270', fontSize: 13 }}>{result.municipio} — {result.uf}</span>
+                <span style={{ color: '#7d849e', fontSize: 13 }}>{result.municipio} — {result.uf}</span>
                 <Dot />
-                <span style={{ color: '#4b5270', fontSize: 13 }}>{result.cnaeDescricao || result.cnae}</span>
+                <span style={{ color: '#7d849e', fontSize: 13 }}>{result.cnaeDescricao || result.cnae}</span>
                 <Dot />
-                <span style={{ color: '#4b5270', fontSize: 13 }}>{result.porte}</span>
+                <span style={{ color: '#7d849e', fontSize: 13 }}>{result.porte}</span>
               </div>
             </div>
           </div>
@@ -117,7 +125,7 @@ export default function Result() {
           <div style={{ flexShrink: 0, border: `1px solid ${badge.border}`, background: badge.bg, borderRadius: 16, padding: '20px 28px', textAlign: 'center', minWidth: 120 }}>
             <div style={{ fontSize: 48, fontWeight: 800, color: badge.color, lineHeight: 1 }}>{finalScore}</div>
             <div style={{ fontSize: 14, fontWeight: 600, color: badge.color, marginTop: 4 }}>{badge.label}</div>
-            <div style={{ fontSize: 11, color: '#4b5270', marginTop: 2 }}>score final</div>
+            <div style={{ fontSize: 11, color: '#7d849e', marginTop: 2 }}>score final</div>
           </div>
         </div>
 
@@ -130,8 +138,8 @@ export default function Result() {
                   <XCircle style={{ width: 18, height: 18, color: gate.multiplier === 0 ? '#ef4444' : '#f97316', flexShrink: 0, marginTop: 1 }} />
                   <div>
                     <p style={{ fontWeight: 600, fontSize: 14, color: gate.multiplier === 0 ? '#ef4444' : '#f97316', margin: 0 }}>{gate.label}</p>
-                    <p style={{ color: '#64748b', fontSize: 13, margin: '4px 0 0' }}>{gate.detail}</p>
-                    <p style={{ color: '#374151', fontSize: 12, margin: '4px 0 0' }}>Multiplicador: ×{gate.multiplier}</p>
+                    <p style={{ color: '#8492a8', fontSize: 13, margin: '4px 0 0' }}>{gate.detail}</p>
+                    <p style={{ color: '#64748b', fontSize: 12, margin: '4px 0 0' }}>Multiplicador: ×{gate.multiplier}</p>
                   </div>
                 </div>
               ))}
@@ -151,10 +159,10 @@ export default function Result() {
                 {result.dimensions.map(dim => (
                   <div key={dim.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                      <span style={{ fontSize: 12, color: '#64748b' }}>{dim.label}</span>
+                      <span style={{ fontSize: 12, color: '#8492a8' }}>{dim.label}</span>
                       <span style={{ fontSize: 12, fontFamily: 'monospace', color: '#94a3b8' }}>{dim.score}/{dim.maxScore}</span>
                     </div>
-                    <div style={{ background: '#1e2030', borderRadius: 99, height: 5 }}>
+                    <div style={{ background: '#252d44', borderRadius: 99, height: 5 }}>
                       <div style={{ background: scoreColor((dim.score / dim.maxScore) * 100), height: 5, borderRadius: 99, width: `${(dim.score / dim.maxScore) * 100}%`, transition: 'width 0.8s ease' }} />
                     </div>
                   </div>
@@ -189,13 +197,13 @@ export default function Result() {
                 const isC = flag.severity === 'critical'
                 const isW = flag.severity === 'warning'
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderRadius: 12, background: isC ? 'rgba(239,68,68,0.07)' : isW ? 'rgba(234,179,8,0.07)' : '#12131c', border: `1px solid ${isC ? 'rgba(239,68,68,0.2)' : isW ? 'rgba(234,179,8,0.2)' : '#1e2030'}` }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderRadius: 12, background: isC ? 'rgba(239,68,68,0.07)' : isW ? 'rgba(234,179,8,0.07)' : '#12131c', border: `1px solid ${isC ? 'rgba(239,68,68,0.2)' : isW ? 'rgba(234,179,8,0.2)' : '#252d44'}` }}>
                     {isC && <XCircle       style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 2 }} />}
                     {isW && <AlertTriangle style={{ width: 16, height: 16, color: '#eab308', flexShrink: 0, marginTop: 2 }} />}
                     {!isC && !isW && <Info style={{ width: 16, height: 16, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />}
                     <div>
                       <p style={{ fontSize: 14, color: isC ? '#fca5a5' : isW ? '#fde047' : '#94a3b8', margin: 0 }}>{flag.message}</p>
-                      <p style={{ fontSize: 12, color: '#374151', margin: '4px 0 0' }}>Fonte: {flag.source}</p>
+                      <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 0' }}>Fonte: {flag.source}</p>
                     </div>
                   </div>
                 )
@@ -212,14 +220,14 @@ export default function Result() {
           return (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <p style={{ color: '#4b5270', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', margin: 0 }}>
+                <p style={{ color: '#7d849e', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', margin: 0 }}>
                   Documentos Analisados ({docs.length})
                 </p>
                 {docs.length > 1 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0d0e14', border: `1px solid ${avgColor}30`, borderRadius: 10, padding: '6px 14px' }}>
-                    <span style={{ fontSize: 11, color: '#4b5270' }}>Score médio dos docs</span>
+                    <span style={{ fontSize: 11, color: '#7d849e' }}>Score médio dos docs</span>
                     <span style={{ fontSize: 18, fontWeight: 700, color: avgColor }}>{avgScore}</span>
-                    <span style={{ fontSize: 10, color: '#374151' }}>/100</span>
+                    <span style={{ fontSize: 10, color: '#64748b' }}>/100</span>
                   </div>
                 )}
               </div>
@@ -233,24 +241,70 @@ export default function Result() {
         })()}
 
         {/* Fontes */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 16, borderTop: '1px solid #1e2030' }}>
-          <span style={{ color: '#374151', fontSize: 12 }}>Fontes consultadas:</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, paddingTop: 16, borderTop: '1px solid #252d44' }}>
+          <span style={{ color: '#64748b', fontSize: 12 }}>Fontes consultadas:</span>
           {result.fontesDados.map((f, i) => (
-            <span key={i} style={{ fontSize: 12, color: '#374151', background: '#12131c', border: '1px solid #1e2030', borderRadius: 6, padding: '2px 10px' }}>{f}</span>
+            <span key={i} style={{ fontSize: 12, color: '#64748b', background: '#12131c', border: '1px solid #252d44', borderRadius: 6, padding: '2px 10px' }}>{f}</span>
           ))}
         </div>
 
         {/* Feedback */}
-        <div style={{ background: '#12131c', border: '1px solid #1e2030', borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
+        <style>{`
+          @keyframes popIn {
+            0%   { transform: scale(0.85); opacity: 0; }
+            60%  { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1);    opacity: 1; }
+          }
+          @keyframes btnPulse {
+            0%   { transform: scale(1); }
+            30%  { transform: scale(1.12); }
+            60%  { transform: scale(0.96); }
+            100% { transform: scale(1); }
+          }
+          .feedback-btn { transition: opacity 0.2s, filter 0.2s; }
+          .feedback-btn:hover { filter: brightness(1.2); }
+          .feedback-btn:disabled { cursor: default; }
+          .feedback-btn.selected { animation: btnPulse 0.35s ease forwards; }
+        `}</style>
+        <div style={{ background: '#12131c', border: `1px solid ${feedback === 'positive' ? 'rgba(34,197,94,0.35)' : feedback === 'negative' ? 'rgba(249,115,22,0.35)' : '#252d44'}`, borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, transition: 'border-color 0.4s' }}>
           <div>
-            <p style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, margin: 0 }}>Esse score reflete a realidade do mercado?</p>
-            <p style={{ color: '#374151', fontSize: 12, margin: '4px 0 0' }}>Seu feedback treina o modelo para ser cada vez mais preciso</p>
+            {feedback ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, animation: 'popIn 0.4s ease forwards' }}>
+                {feedback === 'positive'
+                  ? <ThumbsUp  style={{ width: 22, height: 22, color: '#22c55e' }} />
+                  : <ThumbsDown style={{ width: 22, height: 22, color: '#f97316' }} />
+                }
+                <div>
+                  <p style={{ color: feedback === 'positive' ? '#22c55e' : '#f97316', fontSize: 14, fontWeight: 600, margin: 0 }}>
+                    {feedback === 'positive' ? 'Obrigado! Feedback registrado.' : 'Registrado. Vamos revisar.'}
+                  </p>
+                  <p style={{ color: '#64748b', fontSize: 12, margin: '3px 0 0' }}>
+                    {feedback === 'positive' ? 'Score confirmado como adequado.' : 'Score marcado para calibração do modelo.'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p style={{ color: '#94a3b8', fontSize: 14, fontWeight: 500, margin: 0 }}>Esse score reflete a realidade do mercado?</p>
+                <p style={{ color: '#64748b', fontSize: 12, margin: '4px 0 0' }}>Seu feedback treina o modelo para ser cada vez mais preciso</p>
+              </>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: '8px 16px', color: '#22c55e', fontSize: 13, cursor: 'pointer' }}>
+            <button
+              className={`feedback-btn${feedback === 'positive' ? ' selected' : ''}`}
+              disabled={feedback !== null}
+              onClick={() => setFeedback('positive')}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: feedback === 'positive' ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.08)', border: `1px solid ${feedback === 'positive' ? 'rgba(34,197,94,0.5)' : 'rgba(34,197,94,0.2)'}`, borderRadius: 8, padding: '8px 16px', color: '#22c55e', fontSize: 13, cursor: feedback ? 'default' : 'pointer', opacity: feedback === 'negative' ? 0.35 : 1 }}
+            >
               <CheckCircle style={{ width: 15, height: 15 }} /> Sim, correto
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8, padding: '8px 16px', color: '#ef4444', fontSize: 13, cursor: 'pointer' }}>
+            <button
+              className={`feedback-btn${feedback === 'negative' ? ' selected' : ''}`}
+              disabled={feedback !== null}
+              onClick={() => setFeedback('negative')}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: feedback === 'negative' ? 'rgba(249,115,22,0.18)' : 'rgba(239,68,68,0.08)', border: `1px solid ${feedback === 'negative' ? 'rgba(249,115,22,0.5)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 8, padding: '8px 16px', color: feedback === 'negative' ? '#f97316' : '#ef4444', fontSize: 13, cursor: feedback ? 'default' : 'pointer', opacity: feedback === 'positive' ? 0.35 : 1 }}
+            >
               <XCircle style={{ width: 15, height: 15 }} /> Nota deveria ser menor
             </button>
           </div>
@@ -268,16 +322,16 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
   const hasFlags = doc.redFlags && doc.redFlags.length > 0
 
   return (
-    <div style={{ background: '#12131c', border: '1px solid #1e2030', borderRadius: 16, overflow: 'hidden' }}>
+    <div style={{ background: '#12131c', border: '1px solid #252d44', borderRadius: 16, overflow: 'hidden' }}>
       {/* header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #1e2030', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #252d44', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#0d0e14', border: '1px solid #1e2030', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <FileText style={{ width: 16, height: 16, color: '#4b5270' }} />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#0d0e14', border: '1px solid #252d44', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <FileText style={{ width: 16, height: 16, color: '#7d849e' }} />
           </div>
           <div style={{ minWidth: 0 }}>
             <p style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.fileName}</p>
-            <p style={{ fontSize: 12, color: '#4b5270', margin: '2px 0 0' }}>{doc.tipo}</p>
+            <p style={{ fontSize: 12, color: '#7d849e', margin: '2px 0 0' }}>{doc.tipo}</p>
           </div>
         </div>
 
@@ -291,7 +345,7 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
           {/* score principal do doc */}
           <div style={{ textAlign: 'center', background: '#0d0e14', border: `1px solid ${docColor}40`, borderRadius: 12, padding: '10px 16px', minWidth: 80 }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: docColor, lineHeight: 1 }}>{docScore}</div>
-            <div style={{ fontSize: 10, color: '#4b5270', marginTop: 3 }}>score doc.</div>
+            <div style={{ fontSize: 10, color: '#7d849e', marginTop: 3 }}>score doc.</div>
           </div>
         </div>
       </div>
@@ -299,7 +353,7 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
       {/* badge "não computa" */}
       <div style={{ background: 'rgba(96,165,250,0.06)', borderBottom: '1px solid rgba(96,165,250,0.12)', padding: '6px 20px', display: 'flex', alignItems: 'center', gap: 6 }}>
         <Info style={{ width: 12, height: 12, color: '#60a5fa', flexShrink: 0 }} />
-        <span style={{ fontSize: 11, color: '#4b5270' }}>Score documental não computado no resultado principal — reservado para integração futura</span>
+        <span style={{ fontSize: 11, color: '#7d849e' }}>Score documental não computado no resultado principal — reservado para integração futura</span>
       </div>
 
       <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -312,7 +366,7 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <Lightbulb style={{ width: 13, height: 13, color: '#60a5fa' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: '#4b5270' }}>Insights</span>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: '#7d849e' }}>Insights</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {doc.insights.map((ins, i) => (
@@ -330,7 +384,7 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <ShieldCheck style={{ width: 13, height: 13, color: '#f97316' }} />
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: '#4b5270' }}>Pontos de Atenção</span>
+              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase', color: '#7d849e' }}>Pontos de Atenção</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {doc.redFlags.map((flag, i) => {
@@ -343,7 +397,7 @@ function DocumentCard({ doc }: { doc: DocumentAnalysis }) {
                     {!isC && !isW && <Info style={{ width: 14, height: 14, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />}
                     <div>
                       <p style={{ fontSize: 13, color: isC ? '#fca5a5' : isW ? '#fde047' : '#94a3b8', margin: 0, lineHeight: 1.5 }}>{flag.message}</p>
-                      <p style={{ fontSize: 11, color: '#374151', margin: '3px 0 0' }}>{flag.source}</p>
+                      <p style={{ fontSize: 11, color: '#64748b', margin: '3px 0 0' }}>{flag.source}</p>
                     </div>
                   </div>
                 )
@@ -361,20 +415,20 @@ function MetricPill({ label, value }: { label: string; value: number }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
       <div style={{ fontSize: 15, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 10, color: '#374151', whiteSpace: 'nowrap' }}>{label}</div>
+      <div style={{ fontSize: 10, color: '#64748b', whiteSpace: 'nowrap' }}>{label}</div>
     </div>
   )
 }
 
 /* ── small helpers ── */
 function Dot() {
-  return <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#2e3045', display: 'inline-block' }} />
+  return <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#454e6a', display: 'inline-block' }} />
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p style={{ color: '#4b5270', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', margin: '0 0 14px' }}>{title}</p>
+      <p style={{ color: '#7d849e', fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: 'uppercase', margin: '0 0 14px' }}>{title}</p>
       {children}
     </div>
   )
@@ -382,13 +436,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 const cardStyle: React.CSSProperties = {
   background: '#12131c',
-  border: '1px solid #1e2030',
+  border: '1px solid #252d44',
   borderRadius: 16,
   padding: '24px',
 }
 
 const sectionTitle: React.CSSProperties = {
-  color: '#4b5270',
+  color: '#7d849e',
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: 1.5,

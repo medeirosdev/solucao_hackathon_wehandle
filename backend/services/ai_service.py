@@ -2,8 +2,8 @@ import json
 import os
 from datetime import datetime, date
 
-from openai import AsyncOpenAI
-from services import log_service
+from openai import AsyncOpenAI, RateLimitError, APIStatusError
+from services import log_service, usage_service
 
 _client: AsyncOpenAI | None = None
 
@@ -30,13 +30,36 @@ async def analyze(data: dict, context: str, score_formula: float, docs: list) ->
             max_tokens=512,
         )
         content = response.choices[0].message.content or ""
+        if response.usage:
+            await usage_service.record(
+                "ai_service", "analyze", "deepseek-chat",
+                response.usage.prompt_tokens,
+                response.usage.completion_tokens,
+                data.get("cnpj_basico", ""),
+            )
         return _parse_response(content)
+    except RateLimitError as exc:
+        cnpj = data.get("cnpj_basico", "")
+        await log_service.warning("ai_service", "analyze", f"Rate limit DeepSeek: {exc}", cnpj)
+        return {
+            "score_ia": score_formula,
+            "parecer_ia": "⚠️ Limite de uso da API DeepSeek atingido. Score semântico indisponível nesta análise — usando score da fórmula como referência.",
+            "conflito_cnae": None,
+        }
+    except APIStatusError as exc:
+        cnpj = data.get("cnpj_basico", "")
+        await log_service.error("ai_service", "analyze", exc, cnpj)
+        return {
+            "score_ia": score_formula,
+            "parecer_ia": f"⚠️ Erro na API DeepSeek (HTTP {exc.status_code}). Score semântico indisponível.",
+            "conflito_cnae": None,
+        }
     except Exception as exc:
         cnpj = data.get("cnpj_basico", "")
         await log_service.error("ai_service", "analyze", exc, cnpj)
         return {
             "score_ia": score_formula,
-            "parecer_ia": f"Análise de IA indisponível: {exc}",
+            "parecer_ia": f"⚠️ Análise de IA indisponível: {type(exc).__name__}.",
             "conflito_cnae": None,
         }
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 
 from models.request import AnalyzeRequest, DimensionWeight
-from models.response import AnalyzeResponse, DocumentAnalysis, DocumentRedFlag
+from models.response import AnalyzeResponse, DocumentAnalysis, DocumentRedFlag, HardGate, RedFlag
 from services import cnpj_service, score_service, ai_service, transparency_service, document_service
 
 router = APIRouter()
@@ -54,7 +54,7 @@ async def analyze_company(
 
     empresa_encontrada = bool(company_data.get("razao_social") or company_data.get("situacao_cadastral"))
     if not empresa_encontrada:
-        raise HTTPException(status_code=404, detail="CNPJ não encontrado na base da Receita Federal")
+        return _not_found_response(cnpj)
 
     gates_ext = {
         "ceis": ceis_result,
@@ -112,6 +112,39 @@ async def analyze_company(
     )
 
     return response
+
+
+def _not_found_response(cnpj: str) -> AnalyzeResponse:
+    return AnalyzeResponse(
+        cnpj=cnpj,
+        razao_social="CNPJ não identificado",
+        nome_fantasia="",
+        situacao_cadastral="Não localizado",
+        uf="", municipio="", cnae="", cnae_descricao="", porte="",
+        data_abertura_atividade="",
+        score_formula=0.0,
+        score_ia=0.0,
+        dimensions=[],
+        hard_gates=[HardGate(
+            id="not_found",
+            label="Base de dados",
+            triggered=True,
+            multiplier=0.0,
+            detail=(
+                "CNPJ não localizado na base da Receita Federal. "
+                "Verifique se o número está correto ou se a base de dados está atualizada."
+            ),
+        )],
+        red_flags=[RedFlag(
+            severity="critical",
+            message="CNPJ não encontrado na base de dados da Receita Federal.",
+            source="Receita Federal — CNPJ",
+        )],
+        parecer_ia="Análise indisponível: CNPJ não localizado na base de dados.",
+        conflito_cnae=None,
+        fontes_dados=["Receita Federal"],
+        documents=[],
+    )
 
 
 def _to_doc_model(d: dict) -> DocumentAnalysis:

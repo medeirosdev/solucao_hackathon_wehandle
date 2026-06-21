@@ -39,7 +39,11 @@ export async function analyzeCompany(request: AnalysisRequest): Promise<Analysis
     body: formData,
   })
 
-  if (!res.ok) throw new Error(`Erro na análise: ${res.status}`)
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`
+    try { const body = await res.json(); detail = body.detail ?? detail } catch { /* sem body */ }
+    throw new Error(detail)
+  }
   return _mapResponse(await res.json())
 }
 

@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from models.request import DimensionWeight
 from models.response import DimensionScore, HardGate, RedFlag
+from services import nn_service
 
 _SITUACAO_LABELS = {
     "01": "Nula",
@@ -75,7 +76,24 @@ def calculate(data: dict, weights: list[DimensionWeight], gates_ext: dict) -> di
     hard_gates = [gate_sit, gate_esp, gate_ceis, gate_cnep, gate_lista]
     total_mult = mult_situacao * mult_especial * mult_ceis * mult_cnep * mult_lista
 
-    score_formula = round(score_dimensoes * total_mult, 1)
+    # Rede neural — 1% do score base; nunca bloqueia se falhar
+    score_nn = nn_service.predict(data)
+    if score_nn is not None:
+        blended = score_dimensoes * 0.99 + score_nn * 0.01
+        nn_detail = f"Score rede neural: {score_nn:.1f}/100"
+    else:
+        blended = score_dimensoes
+        nn_detail = "Rede neural indisponível — score sem impacto"
+
+    dimensions.append(DimensionScore(
+        id="rede_neural",
+        label="Rede Neural",
+        score=round((score_nn or 0.0) * 0.01, 2),
+        max_score=1.0,
+        detail=nn_detail,
+    ))
+
+    score_formula = round(blended * total_mult, 1)
     score_formula = max(0.0, min(100.0, score_formula))
 
     red_flags = _build_red_flags(data, gates_ext)

@@ -21,7 +21,7 @@ function StepIcon({ status }: { status: LoadingStep['status'] }) {
   if (status === 'done')    return <CheckCircle  style={{ ...size, color: '#22c55e' }} />
   if (status === 'loading') return <Loader       style={{ ...size, color: '#a855f7', animation: 'spin 1s linear infinite' }} />
   if (status === 'error')   return <AlertCircle  style={{ ...size, color: '#ef4444' }} />
-  return <Circle style={{ ...size, color: '#1e2030' }} />
+  return <Circle style={{ ...size, color: '#3d4460' }} />
 }
 
 export default function Loading() {
@@ -29,8 +29,9 @@ export default function Loading() {
   const navigate = useNavigate()
   const request  = location.state?.request as AnalysisRequest
 
-  const [steps, setSteps]   = useState<LoadingStep[]>(STEPS)
-  const activeIndex         = useRef(0)
+  const [steps,    setSteps]    = useState<LoadingStep[]>(STEPS)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const activeIndex             = useRef(0)
 
   function setStepStatus(index: number, status: LoadingStep['status']) {
     setSteps(prev => prev.map((s, i) => i === index ? { ...s, status } : s))
@@ -60,8 +61,10 @@ export default function Loading() {
         await new Promise(r => setTimeout(r, 500))
         navigate('/result', { state: { result } })
       } catch (err) {
-        console.error(err)
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[WeScore]', msg)
         setStepStatus(activeIndex.current, 'error')
+        setErrorMsg(msg)
       }
     }
 
@@ -83,13 +86,13 @@ export default function Loading() {
             <span style={{ color: '#a855f7', fontSize: 13, fontWeight: 600 }}>Motor trabalhando</span>
           </div>
           <h1 style={{ color: '#f1f5f9', fontSize: 28, fontWeight: 700, margin: '0 0 8px' }}>Analisando Fornecedor</h1>
-          <p style={{ color: '#64748b', fontFamily: 'monospace', fontSize: 16 }}>
+          <p style={{ color: '#8492a8', fontFamily: 'monospace', fontSize: 16 }}>
             {request?.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
           </p>
         </div>
 
         {/* Progress bar */}
-        <div style={{ background: '#1e2030', borderRadius: 99, height: 6, marginBottom: 32 }}>
+        <div style={{ background: '#3d4460', borderRadius: 99, height: 6, marginBottom: 32 }}>
           <div style={{ background: '#a855f7', height: 6, borderRadius: 99, width: `${percent}%`, transition: 'width 0.5s ease' }} />
         </div>
 
@@ -109,7 +112,7 @@ export default function Loading() {
               <StepIcon status={step.status} />
               <span style={{
                 fontSize: 14,
-                color: step.status === 'loading' ? '#c084fc' : step.status === 'done' ? '#4b5270' : step.status === 'error' ? '#ef4444' : '#1e2030',
+                color: step.status === 'loading' ? '#c084fc' : step.status === 'done' ? '#7d849e' : step.status === 'error' ? '#ef4444' : '#3d4460',
                 transition: 'color 0.3s',
               }}>
                 {step.label}
@@ -118,7 +121,20 @@ export default function Loading() {
           ))}
         </div>
 
-        <p style={{ textAlign: 'center', color: '#2e3045', fontSize: 12, marginTop: 24 }}>{percent}% concluído</p>
+        {errorMsg ? (
+          <div style={{ marginTop: 24, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 12, padding: '16px 20px' }}>
+            <p style={{ color: '#ef4444', fontSize: 13, fontWeight: 600, margin: '0 0 6px' }}>Falha na análise</p>
+            <p style={{ color: '#fca5a5', fontSize: 12, fontFamily: 'monospace', margin: '0 0 14px', lineHeight: 1.5 }}>{errorMsg}</p>
+            <button
+              onClick={() => navigate('/')}
+              style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '8px 18px', color: '#ef4444', fontSize: 13, cursor: 'pointer', fontWeight: 500 }}
+            >
+              ← Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <p style={{ textAlign: 'center', color: '#64748b', fontSize: 12, marginTop: 24 }}>{percent}% concluído</p>
+        )}
       </div>
     </div>
   )
